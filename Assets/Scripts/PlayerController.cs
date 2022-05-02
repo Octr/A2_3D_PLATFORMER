@@ -27,11 +27,17 @@ public class PlayerController : MonoBehaviour
         moveX = Input.GetAxis("Horizontal");
         moveY = Input.GetAxis("Vertical");
 
-        Vector2 clamedInput = new Vector2(moveX, moveY);
-        clamedInput = Vector2.ClampMagnitude(clamedInput, 1);
+        Vector3 camForward = Camera.main.transform.forward;
+        camForward.y = 0;
+        Quaternion camRotation = Quaternion.LookRotation(camForward);
 
-        moveX = clamedInput.x;
-        moveY = clamedInput.y;
+        Vector3 clampedInput = new Vector3(moveX, 0, moveY);
+        clampedInput = camRotation * clampedInput;
+
+        clampedInput = Vector3.ClampMagnitude(clampedInput, 1);
+
+        moveX = clampedInput.x;
+        moveY = clampedInput.z;
 
         if(!jumpInput)
         {
@@ -59,7 +65,7 @@ public class PlayerController : MonoBehaviour
         bodyForUse.velocity = newVelocity;
 
         Vector3 newRotation = new Vector3(newVelocity.x, 0, newVelocity.z);
-        if (newRotation.magnitude > 0)
+        if (newRotation.magnitude > 0.5f || newRotation.magnitude < -0.5f)
         {
             transform.forward = Vector3.RotateTowards(transform.forward, newRotation, Time.deltaTime * rotationSpeed, 0);
         }
