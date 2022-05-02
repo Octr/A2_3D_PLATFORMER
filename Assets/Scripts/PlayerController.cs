@@ -14,6 +14,8 @@ public class PlayerController : MonoBehaviour
 
     public bool jumpInput;
 
+    public Animator animController;
+
 
     // Start is called before the first frame update
     void Start()
@@ -65,7 +67,13 @@ public class PlayerController : MonoBehaviour
         bodyForUse.velocity = newVelocity;
 
         Vector3 newRotation = new Vector3(newVelocity.x, 0, newVelocity.z);
-        if (newRotation.magnitude > 0.5f || newRotation.magnitude < -0.5f)
+
+        Vector2 movementInput = new Vector2(moveX, moveY);
+
+        float animationRunningSpeed = movementInput.magnitude;
+        animController.SetFloat("Blend", animationRunningSpeed);
+
+        //if (newRotation.magnitude > 0.5f || newRotation.magnitude < -0.5f)
         {
             transform.forward = Vector3.RotateTowards(transform.forward, newRotation, Time.deltaTime * rotationSpeed, 0);
         }
