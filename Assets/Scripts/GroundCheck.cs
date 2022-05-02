@@ -6,25 +6,28 @@ public class GroundCheck : MonoBehaviour
 {
     public PlayerController controller;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public List<Collider> onGroundColliders = new List<Collider>();
 
     public void OnTriggerEnter(Collider other)
     {
-        controller.isGrounded = true;
+        if(other.tag == "Ground")
+        {
+            Debug.Log("Is Ground");
+
+            onGroundColliders.Add(other);
+            controller.hovering = false;
+            controller.doubleJumped = false;
+            controller.isGrounded = true;
+            controller.animController.SetBool("Jumping", false);
+        }
     }
 
     public void OnTriggerExit(Collider other)
     {
-        controller.isGrounded = false;
+        onGroundColliders.Remove(other);
+        if(onGroundColliders.Count <= 0)
+        {
+            controller.isGrounded = false;
+        }
     }
 }

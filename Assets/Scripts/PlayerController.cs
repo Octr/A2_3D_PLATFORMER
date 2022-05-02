@@ -10,9 +10,9 @@ public class PlayerController : MonoBehaviour
 
     public float moveX, moveY;
 
-    public float movementSpeed, jumpForce, rotationSpeed;
+    public float movementSpeed, jumpForce, rotationSpeed, hoverForce;
 
-    public bool jumpInput;
+    public bool jumpInput, doubleJumped, hovering;
 
     public Animator animController;
 
@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        Physics.gravity *= 1.5f;
     }
 
     // Update is called once per frame
@@ -46,6 +46,11 @@ public class PlayerController : MonoBehaviour
             jumpInput = Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0);
         }
 
+        if(hovering && (Input.GetKeyUp(KeyCode.Space) || Input.GetKeyUp(KeyCode.JoystickButton0)))
+        {
+            hovering = false;
+        }
+
     }
 
     public void FixedUpdate()
@@ -53,10 +58,18 @@ public class PlayerController : MonoBehaviour
         if (jumpInput)
         {
             jumpInput = false;
-            if (isGrounded)
+            if (isGrounded || !doubleJumped)
             {
+                if(!isGrounded)
+                {
+                    doubleJumped = true;
+                }
+                hovering = true;
+                bodyForUse.velocity = new Vector3(bodyForUse.velocity.x, 0, bodyForUse.velocity.z);
                 bodyForUse.AddForce(0, jumpForce, 0, ForceMode.VelocityChange);
-            }
+
+                animController.SetBool("Jumping", true);
+            }         
         }
 
         Vector3 newVelocity = new Vector3();
@@ -66,6 +79,11 @@ public class PlayerController : MonoBehaviour
 
         bodyForUse.velocity = newVelocity;
 
+        if(hovering)
+        {
+            bodyForUse.AddForce(new Vector3(0, 1, 0) * Time.deltaTime * hoverForce, ForceMode.VelocityChange);
+        }
+
         Vector3 newRotation = new Vector3(newVelocity.x, 0, newVelocity.z);
 
         Vector2 movementInput = new Vector2(moveX, moveY);
@@ -73,9 +91,6 @@ public class PlayerController : MonoBehaviour
         float animationRunningSpeed = movementInput.magnitude;
         animController.SetFloat("Blend", animationRunningSpeed);
 
-        //if (newRotation.magnitude > 0.5f || newRotation.magnitude < -0.5f)
-        {
-            transform.forward = Vector3.RotateTowards(transform.forward, newRotation, Time.deltaTime * rotationSpeed, 0);
-        }
+        transform.forward = Vector3.RotateTowards(transform.forward, newRotation, Time.deltaTime * rotationSpeed * (movementInput.magnitude/5), 0);
     }
 }
